@@ -1,71 +1,51 @@
-﻿namespace StudentManagementSystem;
-
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-public static class EfficiencyTests
+namespace StudentManagementSystem
 {
-    public static void RunEfficiencyTests()
+    public static class EfficiencyTests
     {
-        TestPerformance(1000);
-        TestPerformance(10000);
-        TestPerformance(100_000);
-    }
-
-    private static void TestPerformance(int n)
-    {
-        var testData = GenerateTestData(n);
-        var stopwatch = new Stopwatch();
-
-        // Prueba de inserción
-        var tempMatriculaTree = new BST<string, Student>();
-        var tempNameTree = new BST<string, List<Student>>();
-
-        stopwatch.Start();
-        foreach (var student in testData)
+        public static void RunEfficiencyTests()
         {
-            tempMatriculaTree.Insert(student.Matricula, student);
-            tempNameTree.InsertOrUpdate(student.Name, [student], list => { list.Add(student); return list; });
+            TestPerformance(1000);
+            TestPerformance(10000);
         }
-        stopwatch.Stop();
-        Console.WriteLine($"\nInserción de {n}: {stopwatch.ElapsedMilliseconds} ms");
 
-        // Prueba de ordenamiento
-        stopwatch.Restart();
-        StudentOperations.QuickSortStudents(testData, 0, testData.Count - 1);
-        stopwatch.Stop();
-        Console.WriteLine($"Ordenamiento de {n}: {stopwatch.ElapsedMilliseconds} ms");
-
-        // Prueba de búsqueda
-        if (testData.Count > 0)
+        private static void TestPerformance(int n)
         {
-            var targetMatricula = testData[testData.Count / 2].Matricula;
-            stopwatch.Restart();
-            tempMatriculaTree.Search(targetMatricula);
-            stopwatch.Stop();
-            Console.WriteLine($"Búsqueda por matrícula en {n}: {stopwatch.ElapsedTicks} ticks");
+            var testData = GenerateTestData(n);
+            var sw = new Stopwatch();
 
-            var targetName = testData[testData.Count / 2].Name;
-            stopwatch.Restart();
-            tempNameTree.Search(targetName);
-            stopwatch.Stop();
-            Console.WriteLine($"Búsqueda por nombre en {n}: {stopwatch.ElapsedTicks} ticks");
+            sw.Start();
+            var tempTree = new BST<string, Student>();
+            foreach (var student in testData) tempTree.Insert(student.Matricula, student);
+            sw.Stop();
+            Console.WriteLine($"\nInserción BST ({n}): {sw.ElapsedMilliseconds} ms");
+
+            sw.Restart();
+            SortAlgorithms.QuickSort(testData, 0, testData.Count - 1);
+            sw.Stop();
+            Console.WriteLine($"Ordenamiento ({n}): {sw.ElapsedMilliseconds} ms");
+
+            sw.Restart();
+            SearchAlgorithms.BinarySearch(testData, testData[^1].Matricula);
+            sw.Stop();
+            Console.WriteLine($"Búsqueda Binaria: {sw.ElapsedTicks} ticks");
+
+            sw.Restart();
+            SearchAlgorithms.SequentialSearch(testData, testData[^1].Name);
+            sw.Stop();
+            Console.WriteLine($"Búsqueda Secuencial: {sw.ElapsedTicks} ticks");
         }
-    }
 
-    private static List<Student> GenerateTestData(int n)
-    {
-        var students = new List<Student>();
-        var random = new Random();
-
-        for (int i = 0; i < n; i++)
+        private static List<Student> GenerateTestData(int n)
         {
-            students.Add(new Student(
-                name: $"Estudiante{random.Next(1, 100)}",
-                matricula: $"M{random.Next(100000, 999999)}",
-                average: (float)random.NextDouble() * 10
-            ));
+            var random = new Random();
+            var data = new List<Student>();
+            for (int i = 0; i < n; i++)
+                data.Add(new Student($"Estudiante{random.Next(1, 100)}", $"M{random.Next(100000, 999999)}", (float)random.NextDouble() * 10));
+            return data;
         }
-        return students;
     }
 }
